@@ -21,9 +21,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 
     if ($_POST['action'] == 'add') {
+
         if ($_POST['add_student_csrf_token'] !== $_SESSION['add_student_csrf_token']) {
             die("Nice try buddy!");
         }
+        
         $statement = $database->prepare('INSERT INTO students(`people`) VALUE (:people)');
         $statement->execute([
             'people' => $_POST['students']

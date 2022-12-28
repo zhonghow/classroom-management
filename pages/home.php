@@ -1,5 +1,10 @@
 <?php
 session_start();
+
+if (!isset($_SESSION['add_student_csrf_token'])) {
+    $_SESSION['add_student_csrf_token'] = bin2hex(random_bytes(32));
+}
+
 $database = new PDO(
     'mysql:host=devkinsta_db;
         dbname=Classroom_Management',
@@ -14,7 +19,11 @@ $students = $query->fetchAll();
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
+
     if ($_POST['action'] == 'add') {
+        if ($_POST['add_student_csrf_token'] !== $_SESSION['add_student_csrf_token']) {
+            die("Nice try buddy!");
+        }
         $statement = $database->prepare('INSERT INTO students(`people`) VALUE (:people)');
         $statement->execute([
             'people' => $_POST['students']
@@ -31,8 +40,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         header('Location:/');
         exit;
     }
-
-    
 }
 
 ?>
@@ -77,6 +84,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <input type="text" class="form-control" placeholder="Add new student..." name="students" required />
 
                         <button class="btn btn-primary btn-sm rounded ms-2">Add</button>
+
+                        <input type="hidden" name="add_student_csrf_token" value="<?= $_SESSION['add_student_csrf_token']; ?>">
                     </form>
                 <?php else : ?>
 

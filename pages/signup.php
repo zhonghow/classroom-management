@@ -1,6 +1,14 @@
 <?php
 
 session_start();
+
+
+if(!isset($_SESSION['signup_form_csrf_token'])) {
+    $_SESSION['signup_form_csrf_token'] = bin2hex(random_bytes(32));
+}
+
+var_dump($_SESSION['signup_form_csrf_token']);
+
 $database = new PDO(
     'mysql:host=devkinsta_db;
     dbname=Classroom_Management',
@@ -9,6 +17,11 @@ $database = new PDO(
 );
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+
+    if($_POST['signup_form_csrf_token'] !== $_SESSION['signup_form_csrf_token']) {
+        die('Nice try buddy!');
+    }
+    
     $email = $_POST['email'];
     $password = $_POST['password'];
     $confirm_password = $_POST['confirm_password'];
@@ -87,6 +100,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     </button>
                 </div>
 
+                <input type="hidden" name="signup_form_csrf_token" value="<?= $_SESSION['signup_form_csrf_token']; ?>">
+                
             </form>
         </div>
     </div>
